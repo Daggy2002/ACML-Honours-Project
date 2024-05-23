@@ -1,11 +1,8 @@
-# Test accuracy: 0.8496000170707703
-
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization, Input
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import numpy as np
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 # Check if GPU is available
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -84,7 +81,7 @@ def train_model(model, x_train, y_train, x_test, y_test, datagen):
                   loss='categorical_crossentropy', metrics=['accuracy'])
     early_stopping = tf.keras.callbacks.EarlyStopping(
         monitor='val_loss', patience=5, restore_best_weights=True)
-    history = model.fit(datagen.flow(x_train, y_train, batch_size=64),
+    history = model.fit(datagen.flow(x_train, y_train, batch_size=128),
                         epochs=50, validation_data=(x_test, y_test),
                         callbacks=[early_stopping])
     return history
@@ -95,6 +92,7 @@ def train_model(model, x_train, y_train, x_test, y_test, datagen):
 def evaluate_model(model, x_test, y_test):
     test_loss, test_acc = model.evaluate(x_test, y_test)
     print(f'Test accuracy: {test_acc}')
+    return test_acc  # Return the test accuracy
 
 # Plot training and validation metrics
 
@@ -118,6 +116,15 @@ def plot_metrics(history):
     plt.legend(['Train', 'Validation'], loc='upper left')
     plt.show()
 
+# Save the model with a timestamp and accuracy in the filename
+
+
+def save_model(model, test_acc):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    model_filename = f"model_{timestamp}_acc_{test_acc:.4f}.h5"
+    model.save(model_filename)
+    print(f"Model saved as {model_filename}")
+
 # Main function
 
 
@@ -127,8 +134,9 @@ def main():
     input_shape = get_input_shape(x_train)
     model = build_model(input_shape)
     history = train_model(model, x_train, y_train, x_test, y_test, datagen)
-    evaluate_model(model, x_test, y_test)
+    test_acc = evaluate_model(model, x_test, y_test)
     plot_metrics(history)
+    save_model(model, test_acc)  # Save the model with accuracy in the filename
 
 
 if __name__ == "__main__":
