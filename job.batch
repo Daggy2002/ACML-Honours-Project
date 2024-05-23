@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#SBATCH --job-name="ACML"
+#SBATCH --output="/home-mscluster/sjumoorty2/ACML-Honours-Project/node_output/node_output_%j.txt"
+#SBATCH --ntasks=20
+#SBATCH --nodes=20
+#SBATCH --time=3-00:00:00
+#SBATCH --partition=bigbatch
+
+python gpu.py
